@@ -4,96 +4,181 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PSA 10 Deals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f6f7f9; --panel: #ffffff; --text: #16181d; --muted: #5d6470; --line: #e3e6eb;
-  --accent: #2f5bd3; --good: #137a3f; --good-bg: #e3f5ea; --warn: #9a5b00; --warn-bg: #fff3dc;
-  --bad: #b3261e; --chip: #eef1f6; --star: #e0a100;
+  --bg: #f4f7fb; --panel: #ffffff; --text: #2b3440; --muted: #7a8594; --line: #e2e7ee; --line-d: #cdd5df;
+  --green: #3ec45c; --green-d: #2a9a44; --green-bg: #e4f8e9;
+  --blue: #2fa8f5; --blue-d: #1a7fc2; --blue-bg: #e2f3fe;
+  --yellow: #ffc42e; --yellow-d: #d99a00; --yellow-bg: #fff5d6;
+  --red: #ff5a5f; --red-d: #d63a3f; --red-bg: #ffe6e7;
+  --purple: #a66cff; --purple-d: #7d45d6;
+  --chip: #ffffff;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #111317; --panel: #1a1d23; --text: #e8eaee; --muted: #9aa1ad; --line: #2b2f37;
-    --accent: #7ea2ff; --good: #5fd08e; --good-bg: #173524; --warn: #f0b85a; --warn-bg: #3a2c13;
-    --bad: #ff8a80; --chip: #252932; --star: #ffcc33;
+    --bg: #131a22; --panel: #1c2530; --text: #eef2f6; --muted: #93a0b0; --line: #2c3845; --line-d: #3a4858;
+    --green-bg: #1b3a25; --blue-bg: #15324a; --yellow-bg: #3d3214; --red-bg: #431e21; --chip: #1c2530;
   }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text);
-  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
-header { padding: 20px 16px 8px; max-width: 1400px; margin: 0 auto; }
-h1 { margin: 0 0 4px; font-size: 22px; }
-.sub { color: var(--muted); }
-.banner { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn); }
-.controls { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
-.controls-inner { max-width: 1400px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.chip { border: 1px solid var(--line); background: var(--chip); color: var(--text); padding: 6px 12px;
-  border-radius: 999px; cursor: pointer; font: inherit; }
-.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
-.chip .n { opacity: .7; margin-left: 4px; }
-label.tog { display: inline-flex; gap: 6px; align-items: center; padding: 6px 4px; cursor: pointer; }
-select, input[type=search] { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line);
-  background: var(--panel); color: var(--text); }
-input[type=search] { min-width: 180px; flex: 1; }
-.spacer { flex: 1; }
-.stats { max-width: 1400px; margin: 0 auto; padding: 8px 16px 0; color: var(--muted); }
-main { max-width: 1400px; margin: 0 auto; padding: 12px 16px 40px;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
-  display: flex; flex-direction: column; }
-.card.deal { border-color: var(--good); box-shadow: 0 0 0 1px var(--good) inset; }
-.card.ended { opacity: .5; }
-.top { display: flex; gap: 12px; padding: 12px; }
-.thumb { width: 92px; height: 124px; flex: none; border-radius: 6px; background: var(--chip); object-fit: contain;
-  display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 11px; text-align: center; }
-.title { font-weight: 600; margin: 0 0 6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.meta { color: var(--muted); font-size: 12px; }
-.tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 999px; background: var(--chip); color: var(--muted); margin-right: 4px; }
-.time { font-weight: 600; }
-.time.soon { color: var(--bad); }
-.star { margin-left: auto; background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--muted); padding: 0 0 0 6px; align-self: flex-start; }
-.star.on { color: var(--star); }
-.nums { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border-top: 1px solid var(--line); }
-.nums > div { background: var(--panel); padding: 8px 12px; }
-.k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
-.v { font-size: 17px; font-weight: 700; }
-.v small { font-size: 12px; font-weight: 400; color: var(--muted); }
-.pct { display: inline-block; padding: 1px 8px; border-radius: 6px; font-weight: 700; font-size: 14px; }
-.pct.good { background: var(--good-bg); color: var(--good); }
-.pct.over { color: var(--bad); }
-.manual { display: flex; gap: 6px; align-items: center; margin-top: 2px; }
-.manual input { width: 100px; font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--text); }
-.match { padding: 8px 12px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); }
-.conf { font-weight: 600; }
-.conf.low { color: var(--warn); }
-.links { display: flex; gap: 14px; padding: 10px 12px; border-top: 1px solid var(--line); margin-top: auto; font-weight: 600; white-space: nowrap; }
-.links a.primary { margin-left: auto; }
-.empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 60px 0; }
-footer { max-width: 1400px; margin: 0 auto; padding: 0 16px 30px; color: var(--muted); font-size: 12px; }
+  font: 700 15px/1.4 "Nunito", ui-rounded, system-ui, sans-serif; }
+a { color: inherit; text-decoration: none; }
+button, select, input { font: inherit; color: inherit; }
+
+/* chunky 3D button */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+  border: 2px solid var(--line-d); border-bottom-width: 4px; border-radius: 16px; background: var(--chip);
+  padding: 8px 14px; font-weight: 800; transition: transform .06s, border-bottom-width .06s; user-select: none; }
+.btn:active { transform: translateY(2px); border-bottom-width: 2px; margin-bottom: 2px; }
+.btn.green { background: var(--green); border-color: var(--green-d); color: #fff; }
+.btn.blue { background: var(--blue); border-color: var(--blue-d); color: #fff; }
+.btn.on { background: var(--blue-bg); border-color: var(--blue); color: var(--blue-d); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.on { color: var(--blue); } }
+
+/* hero */
+header { max-width: 1300px; margin: 0 auto; padding: 22px 16px 6px; display: flex; gap: 16px; align-items: center; }
+.mascot { width: 92px; height: 112px; flex: none; animation: bob 2.6s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-6px) rotate(-3deg); } }
+.bubble { position: relative; background: var(--panel); border: 2px solid var(--line-d); border-bottom-width: 4px;
+  border-radius: 20px; padding: 14px 18px; flex: 1; min-width: 0; }
+.bubble::before { content: ""; position: absolute; left: -11px; top: 38px; width: 18px; height: 18px; background: var(--panel);
+  border-left: 2px solid var(--line-d); border-bottom: 2px solid var(--line-d); transform: rotate(45deg); }
+.bubble h1 { margin: 0 0 4px; font-size: 24px; font-weight: 900; letter-spacing: -.01em; }
+.bubble p { margin: 0; color: var(--muted); font-weight: 700; }
+.bubble p b { color: var(--text); }
+
+/* stat badges */
+.badges { max-width: 1300px; margin: 0 auto; padding: 10px 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.badge { background: var(--panel); border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 18px;
+  padding: 10px 12px; display: flex; gap: 10px; align-items: center; }
+.badge .ico { font-size: 26px; line-height: 1; }
+.badge .num { font-size: 22px; font-weight: 900; line-height: 1; }
+.badge .lbl { font-size: 12px; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.badge.fire .num { color: var(--red); } .badge.time .num { color: var(--blue); }
+.badge.starred .num { color: var(--yellow-d); } .badge.save .num { color: var(--green); }
+@media (max-width: 700px) { .badges { grid-template-columns: repeat(2, 1fr); } }
+
+.banner { max-width: 1300px; margin: 0 auto 4px; padding: 0 16px; }
+.banner div { background: var(--yellow-bg); color: var(--yellow-d); border: 2px solid var(--yellow); border-radius: 16px; padding: 10px 14px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .banner div { color: var(--yellow); } }
+
+/* controls */
+.controls { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(6px); border-bottom: 2px solid var(--line); }
+.controls-inner { max-width: 1300px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+#chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip .n { background: var(--line); color: var(--muted); border-radius: 999px; padding: 0 7px; font-size: 12px; }
+.chip.on .n { background: var(--blue); color: #fff; }
+.tog input { display: none; }
+select, input[type=search] { padding: 8px 12px; border-radius: 16px; border: 2px solid var(--line-d); background: var(--panel); font-weight: 800; }
+input[type=search] { min-width: 170px; flex: 1; }
+@media (max-width: 700px) {
+  .controls { position: static; }
+  #chips { flex-wrap: nowrap; overflow-x: auto; width: 100%; padding-bottom: 4px; scrollbar-width: none; }
+  #chips .btn { flex: none; }
+  .tog { padding: 6px 10px; font-size: 13px; }
+}
+input[type=search]:focus, select:focus { outline: none; border-color: var(--blue); }
+
+/* grid + cards */
+main { max-width: 1300px; margin: 0 auto; padding: 14px 16px 40px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+.card { position: relative; background: var(--panel); border: 2px solid var(--line); border-bottom-width: 5px;
+  border-radius: 22px; display: flex; flex-direction: column; transition: transform .15s; }
+.card:hover { transform: translateY(-3px); }
+.card.deal { border-color: var(--green); }
+.card.ended { opacity: .45; filter: grayscale(.6); }
+.ribbon { position: absolute; top: -12px; left: 16px; background: var(--green); color: #fff; font-weight: 900;
+  font-size: 13px; padding: 3px 12px; border-radius: 999px; border-bottom: 3px solid var(--green-d); letter-spacing: .04em;
+  animation: wiggle 3s ease-in-out infinite; }
+@keyframes wiggle { 0%, 90%, 100% { transform: rotate(0); } 93% { transform: rotate(-6deg); } 96% { transform: rotate(6deg); } }
+.top { display: flex; gap: 12px; padding: 16px 14px 10px; }
+.thumb { width: 84px; height: 116px; flex: none; border-radius: 12px; background: var(--bg); object-fit: contain;
+  display: flex; align-items: center; justify-content: center; font-size: 34px; border: 2px solid var(--line); }
+.title { font-weight: 900; font-size: 15px; line-height: 1.3; margin: 0 0 6px; display: -webkit-box; -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical; overflow: hidden; }
+.title:hover { color: var(--blue); }
+.pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+.pill { font-size: 12px; font-weight: 800; padding: 2px 9px; border-radius: 999px; background: var(--bg); color: var(--muted); }
+.pill.time { background: var(--blue-bg); color: var(--blue-d); }
+.pill.time.soon { background: var(--red-bg); color: var(--red-d); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: scale(1.06); } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill.time { color: var(--blue); } :root:not([data-theme="light"]) .pill.time.soon { color: var(--red); } }
+.meta { color: var(--muted); font-size: 12px; font-weight: 700; }
+.star { background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--line-d);
+  padding: 0; align-self: flex-start; transition: transform .15s; }
+.star.on { color: var(--yellow); animation: pop .35s ease-out; }
+@keyframes pop { 40% { transform: scale(1.5) rotate(15deg); } }
+
+.prices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 14px; }
+.tile { background: var(--bg); border-radius: 14px; padding: 8px 10px; }
+.k { font-size: 11px; color: var(--muted); font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
+.v { font-size: 20px; font-weight: 900; }
+.tile input { width: 100%; font-size: 18px; font-weight: 900; padding: 2px 8px; border-radius: 10px;
+  border: 2px dashed var(--line-d); background: var(--panel); }
+.tile input:focus { outline: none; border-style: solid; border-color: var(--blue); }
+
+/* discount meter */
+.meter { padding: 12px 14px 4px; }
+.meter-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.verdict { font-weight: 900; font-size: 16px; }
+.verdict.good { color: var(--green); } .verdict.meh { color: var(--yellow-d); } .verdict.over { color: var(--red); }
+.verdict.none { color: var(--muted); font-size: 14px; }
+.bar { position: relative; height: 16px; border-radius: 999px; background: var(--line); overflow: visible; }
+.fill { height: 100%; border-radius: 999px; position: relative; transition: width .4s; }
+.fill::after { content: ""; position: absolute; left: 8px; right: 8px; top: 3px; height: 4px; border-radius: 99px; background: rgba(255,255,255,.35); }
+.fill.good { background: var(--green); } .fill.meh { background: var(--yellow); } .fill.over { background: var(--red); }
+.line90 { position: absolute; top: -4px; bottom: -4px; width: 3px; border-radius: 2px; background: var(--text); opacity: .55; }
+.maxbid { font-size: 13px; color: var(--muted); font-weight: 800; margin-top: 8px; }
+.maxbid b { color: var(--text); font-size: 15px; }
+
+.match { padding: 8px 14px 0; font-size: 12px; color: var(--muted); font-weight: 700; }
+.conf { font-weight: 900; }
+.conf.high { color: var(--green); } .conf.medium { color: var(--blue); } .conf.low { color: var(--yellow-d); }
+.actions { display: flex; gap: 8px; padding: 14px; margin-top: auto; }
+.actions .btn { padding: 8px 10px; font-size: 13px; }
+.actions .btn.green { flex: 1; font-size: 15px; letter-spacing: .03em; text-transform: uppercase; }
+
+.empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 50px 0; font-size: 17px; }
+.empty .big { font-size: 54px; }
+footer { max-width: 1300px; margin: 0 auto; padding: 0 16px 30px; color: var(--muted); font-size: 12px; font-weight: 700; }
 </style>
 </head>
 <body>
 <header>
-  <h1>PSA 10 Auction Deals</h1>
-  <div class="sub" id="sub"></div>
-  <div class="banner" id="banner" hidden></div>
+  <svg class="mascot" viewBox="0 0 92 112" aria-hidden="true">
+    <rect x="6" y="4" width="80" height="104" rx="14" fill="#dff1ff" stroke="#1a7fc2" stroke-width="4"/>
+    <rect x="14" y="12" width="64" height="20" rx="6" fill="#ff5a5f"/>
+    <text x="46" y="27.5" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="15" fill="#fff">GEM 10</text>
+    <rect x="16" y="40" width="60" height="60" rx="8" fill="#fff" stroke="#9cd2f7" stroke-width="2"/>
+    <ellipse cx="35" cy="62" rx="6" ry="8" fill="#2b3440"/><ellipse cx="57" cy="62" rx="6" ry="8" fill="#2b3440"/>
+    <circle cx="37" cy="59" r="2.2" fill="#fff"/><circle cx="59" cy="59" r="2.2" fill="#fff"/>
+    <ellipse cx="27" cy="76" rx="5" ry="3" fill="#ffb3b5"/><ellipse cx="65" cy="76" rx="5" ry="3" fill="#ffb3b5"/>
+    <path d="M36 78 Q46 90 56 78" fill="none" stroke="#2b3440" stroke-width="4" stroke-linecap="round"/>
+    <path d="M80 2 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#ffc42e"/>
+  </svg>
+  <div class="bubble"><h1 id="hello">Hey, card hunter!</h1><p id="sub"></p></div>
 </header>
+<div class="badges" id="badges"></div>
+<div class="banner" id="banner" hidden></div>
 <div class="controls"><div class="controls-inner" id="controls">
-  <span id="chips"></span>
-  <label class="tog"><input type="checkbox" id="dealsOnly"> Deals only</label>
-  <label class="tog"><input type="checkbox" id="starOnly"> ★ Starred</label>
-  <label class="tog" title="Add shipping to the current bid when comparing to market price"><input type="checkbox" id="withShip"> Count shipping</label>
-  <label class="tog"><input type="checkbox" id="hideEnded" checked> Hide ended</label>
+  <div id="chips"></div>
+  <label class="btn tog" id="l-dealsOnly"><input type="checkbox" id="dealsOnly">🔥 Deals only</label>
+  <label class="btn tog" id="l-starOnly"><input type="checkbox" id="starOnly">⭐ Starred</label>
+  <label class="btn tog" id="l-withShip" title="Add shipping to the current bid when comparing to market price"><input type="checkbox" id="withShip">📦 Count shipping</label>
+  <label class="btn tog" id="l-hideEnded"><input type="checkbox" id="hideEnded" checked>🙈 Hide ended</label>
   <select id="sort" aria-label="Sort">
-    <option value="end">Ending soonest</option>
-    <option value="pct">Biggest discount</option>
-    <option value="bid">Lowest bid</option>
-    <option value="market">Highest market value</option>
+    <option value="end">⏰ Ending soonest</option>
+    <option value="pct">💸 Biggest discount</option>
+    <option value="bid">🪙 Lowest bid</option>
+    <option value="market">💎 Highest value</option>
   </select>
-  <input type="search" id="q" placeholder="Filter by name, e.g. charizard">
+  <input type="search" id="q" placeholder="🔍 Search, e.g. charizard">
 </div></div>
-<div class="stats" id="stats"></div>
 <main id="grid"></main>
 <footer id="footer"></footer>
 
@@ -104,12 +189,9 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
-const state = {
-  game: store.get("game", "all"),
-  stars: store.get("stars", {}),
-  manual: store.get("manual", {}),
-};
+const state = { game: store.get("game", "all"), stars: store.get("stars", {}), manual: store.get("manual", {}) };
 const T = DATA.deal_threshold;
+const ICON = { pokemon: "⚡", onepiece: "🏴‍☠️", dragonball: "🐉", weiss: "🎴" };
 const money = (v) => v == null ? "—" : "$" + v.toLocaleString(undefined, { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 });
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const gameLabel = Object.fromEntries(DATA.games.map((g) => [g.key, g.label]));
@@ -124,7 +206,7 @@ function calc(it) {
   const deal = pct != null && pct >= T && trusted;
   const maxBid = market ? Math.max(0, Math.floor(market * (1 - T) - ship)) : null;
   const msLeft = new Date(it.end_time) - Date.now();
-  return { market, manual: !!manual, pct, deal, maxBid, msLeft, cost };
+  return { market, manual: !!manual, pct, deal, maxBid, msLeft, cost, trusted };
 }
 
 function timeLeft(ms) {
@@ -133,18 +215,41 @@ function timeLeft(ms) {
   return h ? `${h}h ${m}m` : `${m}m ${s}s`;
 }
 
-function renderHeader() {
+function renderStatic() {
   const gen = new Date(DATA.generated_at), next = new Date(DATA.next_refresh);
   const fmt = (d) => d.toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
-  $("sub").textContent = `eBay auctions · PSA 10 · min ${money(DATA.min_price)} · ending within ${DATA.hours_ahead}h of the update. ` +
-    `Updated ${fmt(gen)} · next update about ${fmt(next)}.`;
+  $("footer").innerHTML = `PSA 10 eBay auctions · min ${money(DATA.min_price)} · ending within ${DATA.hours_ahead}h of each update.
+    Updated ${esc(fmt(gen))} · next update about ${esc(fmt(next))}.<br>
+    A deal = current bid at least ${Math.round(T * 100)}% under the PSA 10 market price. The black line on each meter is that ${Math.round(T * 100)}% mark.
+    Low-confidence PriceCharting matches never count as deals until you type the price in. Stars and typed prices are saved in this browser only.`;
   const msgs = [];
-  if (DATA.demo) msgs.push("DEMO DATA — these are made-up sample listings so you can preview the page. Links go to eBay searches, not real auctions.");
-  if (!DATA.has_pricecharting) msgs.push("No PriceCharting API key is set, so market prices aren't filled in automatically. Click “PriceCharting” on a card, then type the PSA 10 price into the card; it's saved in this browser.");
-  if (msgs.length) { $("banner").hidden = false; $("banner").innerHTML = msgs.map(esc).join("<br>"); }
-  $("footer").innerHTML = `A deal = current bid at least ${Math.round(T * 100)}% under the PSA 10 market price. “Max bid” is the most you can bid and still be ${Math.round(T * 100)}% under.
-    Low-confidence PriceCharting matches are never counted as deals until you check them (type the price in to confirm).
-    Market prices: ${DATA.has_pricecharting ? "PriceCharting PSA 10 (manual-only-price)." : "entered by you."} Starred cards and typed prices are saved in this browser only.`;
+  if (DATA.demo) msgs.push("🧪 DEMO DATA: made-up sample listings so you can preview the page. Links go to eBay searches, not real auctions.");
+  if (!DATA.has_pricecharting) msgs.push("💡 No PriceCharting key yet: tap “Prices” on a card, then type the PSA 10 price into the card. I'll do the math!");
+  if (msgs.length) { $("banner").hidden = false; $("banner").innerHTML = `<div>${msgs.map(esc).join("<br>")}</div>`; }
+}
+
+function renderHero(all) {
+  const live = all.filter((x) => x.c.msLeft > 0);
+  const deals = live.filter((x) => x.c.deal).sort((a, b) => b.c.pct - a.c.pct);
+  const soon = live.filter((x) => x.c.msLeft < 3.6e6).length;
+  const stars = live.filter((x) => state.stars[x.it.id]).length;
+  const savings = deals.reduce((s, x) => s + (x.c.market - x.c.cost), 0);
+  const h = new Date().getHours();
+  $("hello").textContent = h < 12 ? "Good morning, card hunter!" : h < 18 ? "Hey there, card hunter!" : "Evening, card hunter!";
+  if (deals.length) {
+    const b = deals[0];
+    $("sub").innerHTML = `You've got <b>${deals.length} deal${deals.length === 1 ? "" : "s"}</b> waiting! Best one: <b>${esc(b.it.title.slice(0, 48))}${b.it.title.length > 48 ? "…" : ""}</b> at <b>${Math.round(b.c.pct * 100)}% under</b> market. 🔥`;
+  } else if (live.length) {
+    $("sub").innerHTML = `No steals yet, but <b>${live.length} auctions</b> are live. Type in a few PSA 10 prices and I'll spot the deals!`;
+  } else {
+    $("sub").innerHTML = `Everything's ended. Check back after the next refresh! 😴`;
+  }
+  $("badges").innerHTML = [
+    ["fire", "🔥", deals.length, "Deals now"],
+    ["time", "⏰", soon, "Ending < 1h"],
+    ["starred", "⭐", stars, "Starred"],
+    ["save", "💰", money(Math.round(savings)), "Under market"],
+  ].map(([cls, ico, num, lbl]) => `<div class="badge ${cls}"><div class="ico">${ico}</div><div><div class="num">${num}</div><div class="lbl">${lbl}</div></div></div>`).join("");
 }
 
 function renderChips(listings) {
@@ -152,43 +257,58 @@ function renderChips(listings) {
   listings.forEach((it) => (counts[it.game] = (counts[it.game] || 0) + 1));
   const opts = [{ key: "all", label: "All" }, ...DATA.games];
   $("chips").innerHTML = opts.map((g) =>
-    `<button class="chip" data-game="${g.key}" aria-pressed="${state.game === g.key}">${esc(g.label)}<span class="n">${counts[g.key] || 0}</span></button>`).join(" ");
+    `<button class="btn chip ${state.game === g.key ? "on" : ""}" data-game="${g.key}" aria-pressed="${state.game === g.key}">${ICON[g.key] || "🃏"} ${esc(g.label)} <span class="n">${counts[g.key] || 0}</span></button>`).join("");
+  ["dealsOnly", "starOnly", "withShip", "hideEnded"].forEach((id) => $("l-" + id).classList.toggle("on", $(id).checked));
+}
+
+function meter(c, it) {
+  if (c.pct == null) return `<div class="meter"><div class="meter-row"><span class="verdict none">Type the PSA 10 price above 👆</span></div>
+    <div class="bar"><div class="line90" style="left:${(1 - T) * 100}%"></div></div></div>`;
+  const ratio = c.cost / c.market;
+  const cls = c.deal ? "good" : c.pct >= 0 ? "meh" : "over";
+  const word = c.deal ? (c.pct >= 0.25 ? "Steal! 🤑" : "Great deal! 🎉") : c.pct >= T ? "Check the match 🧐" : c.pct >= 0 ? "Close to market" : "Over market 😬";
+  const pctTxt = c.pct >= 0 ? `${Math.round(c.pct * 100)}% under` : `${Math.round(-c.pct * 100)}% over`;
+  return `<div class="meter">
+    <div class="meter-row"><span class="verdict ${cls}">${word}</span><span class="verdict ${cls}" style="font-size:14px">${pctTxt}</span></div>
+    <div class="bar"><div class="fill ${cls}" style="width:${Math.min(100, ratio * 100)}%"></div><div class="line90" style="left:${(1 - T) * 100}%" title="${Math.round(T * 100)}% under market"></div></div>
+    <div class="maxbid">Bid up to <b>${money(c.maxBid)}</b> to stay ${Math.round(T * 100)}% under</div>
+  </div>`;
 }
 
 function card(it, c) {
   const starred = !!state.stars[it.id];
   const pc = it.pc;
-  const pctHtml = c.pct == null ? `<span class="meta">enter price →</span>` :
-    `<span class="pct ${c.deal ? "good" : c.pct < 0 ? "over" : ""}">${c.pct >= 0 ? Math.round(c.pct * 100) + "% under" : Math.round(-c.pct * 100) + "% over"}</span>`;
-  const matchHtml = c.manual ? `Market price entered by you.` :
-    pc ? `Matched: <b>${esc(pc.name)}</b> · ${esc(pc.console)} · <span class="conf ${pc.confidence}">${pc.confidence} confidence</span>` +
-      (pc.psa9 ? ` · PSA 9 ${money(pc.psa9)}` : "") :
-    DATA.has_pricecharting ? `No PriceCharting match found — check manually.` : `Look up the PSA 10 price, then type it in above.`;
+  const matchHtml = c.manual ? `✍️ Market price entered by you.` :
+    pc ? `🔗 ${esc(pc.name)} · ${esc(pc.console)} · <span class="conf ${pc.confidence}">${pc.confidence} match</span>` + (pc.psa9 ? ` · PSA 9 ${money(pc.psa9)}` : "") :
+    DATA.has_pricecharting ? `🤷 No PriceCharting match. Check it yourself.` : `👀 Look up the price, then type it in.`;
   const soon = c.msLeft > 0 && c.msLeft < 3.6e6;
-  return `<article class="card ${c.deal ? "deal" : ""} ${c.msLeft <= 0 ? "ended" : ""}" data-id="${esc(it.id)}">
+  return `<article class="card ${c.deal ? "deal" : ""} ${c.msLeft <= 0 ? "ended" : ""}">
+    ${c.deal && c.msLeft > 0 ? `<div class="ribbon">DEAL!</div>` : ""}
     <div class="top">
-      ${it.image ? `<img class="thumb" loading="lazy" src="${esc(it.image)}" alt="">` : `<div class="thumb">${esc(gameLabel[it.game])}<br>no image</div>`}
+      ${it.image ? `<img class="thumb" loading="lazy" src="${esc(it.image)}" alt="">` : `<div class="thumb">${ICON[it.game] || "🃏"}</div>`}
       <div style="min-width:0;flex:1">
         <a class="title" href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.title)}</a>
-        <div class="meta"><span class="tag">${esc(gameLabel[it.game])}</span>${it.card_number ? `<span class="tag">#${esc(it.card_number)}</span>` : ""}</div>
-        <div class="meta" style="margin-top:6px">Ends in <span class="time ${soon ? "soon" : ""}" data-end="${esc(it.end_time)}">${timeLeft(c.msLeft)}</span></div>
-        <div class="meta">${it.bid_count} bid${it.bid_count === 1 ? "" : "s"} · ship ${it.shipping == null ? "?" : it.shipping ? money(it.shipping) : "free"}${it.seller ? ` · ${esc(it.seller)}${it.seller_feedback ? " (" + esc(it.seller_feedback) + "%)" : ""}` : ""}</div>
+        <div class="pills">
+          <span class="pill time ${soon ? "soon" : ""}">⏰ <span data-end="${esc(it.end_time)}">${timeLeft(c.msLeft)}</span></span>
+          <span class="pill">${ICON[it.game] || ""} ${esc(gameLabel[it.game])}</span>
+          ${it.card_number ? `<span class="pill">#${esc(it.card_number)}</span>` : ""}
+        </div>
+        <div class="meta">${it.bid_count} bid${it.bid_count === 1 ? "" : "s"} · ${it.shipping == null ? "ship ?" : it.shipping ? "ship " + money(it.shipping) : "free ship"}${it.seller_feedback ? ` · ${esc(it.seller_feedback)}% seller` : ""}</div>
       </div>
       <button class="star ${starred ? "on" : ""}" data-star="${esc(it.id)}" aria-label="Star">${starred ? "★" : "☆"}</button>
     </div>
-    <div class="nums">
-      <div><div class="k">Current bid</div><div class="v">${money(it.current_bid)}</div></div>
-      <div><div class="k">PSA 10 market</div>
-        <div class="manual"><input type="number" min="0" step="1" inputmode="decimal" data-manual="${esc(it.id)}"
-          placeholder="${pc && pc.psa10 ? pc.psa10 : "type $"}" value="${state.manual[it.id] || ""}" aria-label="PSA 10 market price"></div></div>
-      <div><div class="k">vs market</div><div class="v">${pctHtml}</div></div>
-      <div><div class="k">Max bid (${Math.round(T * 100)}% under)</div><div class="v">${money(c.maxBid)}</div></div>
+    <div class="prices">
+      <div class="tile"><div class="k">Current bid</div><div class="v">${money(it.current_bid)}</div></div>
+      <div class="tile"><div class="k">PSA 10 value</div>
+        <input type="number" min="0" step="1" inputmode="decimal" data-manual="${esc(it.id)}"
+          placeholder="${pc && pc.psa10 ? pc.psa10 : "$ ?"}" value="${state.manual[it.id] || ""}" aria-label="PSA 10 market price"></div>
     </div>
+    ${meter(c, it)}
     <div class="match">${matchHtml}</div>
-    <div class="links">
-      <a href="${esc(it.pc_search_url)}" target="_blank" rel="noopener">PriceCharting</a>
-      <a href="${esc(it.google_url)}" target="_blank" rel="noopener">Google</a>
-      <a class="primary" href="${esc(it.url)}" target="_blank" rel="noopener">Open on eBay →</a>
+    <div class="actions">
+      <a class="btn" href="${esc(it.pc_search_url)}" target="_blank" rel="noopener" title="PriceCharting">📈 Prices</a>
+      <a class="btn" href="${esc(it.google_url)}" target="_blank" rel="noopener" title="Google">🔍</a>
+      <a class="btn green" href="${esc(it.url)}" target="_blank" rel="noopener">Bid on eBay</a>
     </div>
   </article>`;
 }
@@ -196,6 +316,7 @@ function card(it, c) {
 function render() {
   const q = $("q").value.trim().toLowerCase();
   const all = DATA.listings.map((it) => ({ it, c: calc(it) }));
+  renderHero(all);
   renderChips(all.map((x) => x.it));
   let rows = all.filter(({ it, c }) =>
     (state.game === "all" || it.game === state.game) &&
@@ -203,18 +324,13 @@ function render() {
     (!$("starOnly").checked || state.stars[it.id]) &&
     (!$("hideEnded").checked || c.msLeft > 0) &&
     (!q || it.title.toLowerCase().includes(q)));
-  const s = $("sort").value;
   const key = {
-    end: (x) => new Date(x.it.end_time),
-    pct: (x) => -(x.c.pct ?? -9),
-    bid: (x) => x.it.current_bid,
-    market: (x) => -(x.c.market ?? 0),
-  }[s];
+    end: (x) => new Date(x.it.end_time), pct: (x) => -(x.c.pct ?? -9),
+    bid: (x) => x.it.current_bid, market: (x) => -(x.c.market ?? 0),
+  }[$("sort").value];
   rows.sort((a, b) => key(a) - key(b));
-  const deals = all.filter((x) => x.c.deal && x.c.msLeft > 0).length;
-  $("stats").textContent = `Showing ${rows.length} of ${all.length} auctions · ${deals} deal${deals === 1 ? "" : "s"} right now`;
   $("grid").innerHTML = rows.length ? rows.map((x) => card(x.it, x.c)).join("") :
-    `<div class="empty">Nothing matches these filters.</div>`;
+    `<div class="empty"><div class="big">🃏💤</div>Nothing here! Try loosening your filters.</div>`;
 }
 
 function save() {
@@ -240,10 +356,10 @@ $("grid").addEventListener("change", (e) => {
 setInterval(() => {
   document.querySelectorAll("[data-end]").forEach((el) => {
     const ms = new Date(el.dataset.end) - Date.now();
-    el.textContent = timeLeft(ms); el.classList.toggle("soon", ms > 0 && ms < 3.6e6);
+    el.textContent = timeLeft(ms); el.parentElement.classList.toggle("soon", ms > 0 && ms < 3.6e6);
   });
 }, 1000);
-renderHeader();
+renderStatic();
 render();
 </script>
 </body>
