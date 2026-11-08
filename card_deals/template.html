@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PSA 10 Deals</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #16181d; --muted: #5d6470; --line: #e3e6eb;
+  --accent: #2f5bd3; --good: #137a3f; --good-bg: #e3f5ea; --warn: #9a5b00; --warn-bg: #fff3dc;
+  --bad: #b3261e; --chip: #eef1f6; --star: #e0a100;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111317; --panel: #1a1d23; --text: #e8eaee; --muted: #9aa1ad; --line: #2b2f37;
+    --accent: #7ea2ff; --good: #5fd08e; --good-bg: #173524; --warn: #f0b85a; --warn-bg: #3a2c13;
+    --bad: #ff8a80; --chip: #252932; --star: #ffcc33;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+header { padding: 20px 16px 8px; max-width: 1400px; margin: 0 auto; }
+h1 { margin: 0 0 4px; font-size: 22px; }
+.sub { color: var(--muted); }
+.banner { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn); }
+.controls { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.controls-inner { max-width: 1400px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { border: 1px solid var(--line); background: var(--chip); color: var(--text); padding: 6px 12px;
+  border-radius: 999px; cursor: pointer; font: inherit; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip .n { opacity: .7; margin-left: 4px; }
+label.tog { display: inline-flex; gap: 6px; align-items: center; padding: 6px 4px; cursor: pointer; }
+select, input[type=search] { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--text); }
+input[type=search] { min-width: 180px; flex: 1; }
+.spacer { flex: 1; }
+.stats { max-width: 1400px; margin: 0 auto; padding: 8px 16px 0; color: var(--muted); }
+main { max-width: 1400px; margin: 0 auto; padding: 12px 16px 40px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+  display: flex; flex-direction: column; }
+.card.deal { border-color: var(--good); box-shadow: 0 0 0 1px var(--good) inset; }
+.card.ended { opacity: .5; }
+.top { display: flex; gap: 12px; padding: 12px; }
+.thumb { width: 92px; height: 124px; flex: none; border-radius: 6px; background: var(--chip); object-fit: contain;
+  display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 11px; text-align: center; }
+.title { font-weight: 600; margin: 0 0 6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.meta { color: var(--muted); font-size: 12px; }
+.tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 999px; background: var(--chip); color: var(--muted); margin-right: 4px; }
+.time { font-weight: 600; }
+.time.soon { color: var(--bad); }
+.star { margin-left: auto; background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--muted); padding: 0 0 0 6px; align-self: flex-start; }
+.star.on { color: var(--star); }
+.nums { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border-top: 1px solid var(--line); }
+.nums > div { background: var(--panel); padding: 8px 12px; }
+.k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+.v { font-size: 17px; font-weight: 700; }
+.v small { font-size: 12px; font-weight: 400; color: var(--muted); }
+.pct { display: inline-block; padding: 1px 8px; border-radius: 6px; font-weight: 700; font-size: 14px; }
+.pct.good { background: var(--good-bg); color: var(--good); }
+.pct.over { color: var(--bad); }
+.manual { display: flex; gap: 6px; align-items: center; margin-top: 2px; }
+.manual input { width: 100px; font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--text); }
+.match { padding: 8px 12px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); }
+.conf { font-weight: 600; }
+.conf.low { color: var(--warn); }
+.links { display: flex; gap: 14px; padding: 10px 12px; border-top: 1px solid var(--line); margin-top: auto; font-weight: 600; white-space: nowrap; }
+.links a.primary { margin-left: auto; }
+.empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 60px 0; }
+footer { max-width: 1400px; margin: 0 auto; padding: 0 16px 30px; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>PSA 10 Auction Deals</h1>
+  <div class="sub" id="sub"></div>
+  <div class="banner" id="banner" hidden></div>
+</header>
+<div class="controls"><div class="controls-inner" id="controls">
+  <span id="chips"></span>
+  <label class="tog"><input type="checkbox" id="dealsOnly"> Deals only</label>
+  <label class="tog"><input type="checkbox" id="starOnly"> ★ Starred</label>
+  <label class="tog" title="Add shipping to the current bid when comparing to market price"><input type="checkbox" id="withShip"> Count shipping</label>
+  <label class="tog"><input type="checkbox" id="hideEnded" checked> Hide ended</label>
+  <select id="sort" aria-label="Sort">
+    <option value="end">Ending soonest</option>
+    <option value="pct">Biggest discount</option>
+    <option value="bid">Lowest bid</option>
+    <option value="market">Highest market value</option>
+  </select>
+  <input type="search" id="q" placeholder="Filter by name, e.g. charizard">
+</div></div>
+<div class="stats" id="stats"></div>
+<main id="grid"></main>
+<footer id="footer"></footer>
+
+<script>
+const DATA = /*__DATA__*/null;
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+const state = {
+  game: store.get("game", "all"),
+  stars: store.get("stars", {}),
+  manual: store.get("manual", {}),
+};
+const T = DATA.deal_threshold;
+const money = (v) => v == null ? "—" : "$" + v.toLocaleString(undefined, { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 });
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const gameLabel = Object.fromEntries(DATA.games.map((g) => [g.key, g.label]));
+
+function calc(it) {
+  const manual = state.manual[it.id];
+  const market = manual || (it.pc && it.pc.psa10) || null;
+  const ship = $("withShip").checked ? (it.shipping || 0) : 0;
+  const cost = it.current_bid + ship;
+  const pct = market ? 1 - cost / market : null;
+  const trusted = !!manual || (it.pc && it.pc.confidence !== "low");
+  const deal = pct != null && pct >= T && trusted;
+  const maxBid = market ? Math.max(0, Math.floor(market * (1 - T) - ship)) : null;
+  const msLeft = new Date(it.end_time) - Date.now();
+  return { market, manual: !!manual, pct, deal, maxBid, msLeft, cost };
+}
+
+function timeLeft(ms) {
+  if (ms <= 0) return "Ended";
+  const h = Math.floor(ms / 3.6e6), m = Math.floor((ms % 3.6e6) / 6e4), s = Math.floor((ms % 6e4) / 1e3);
+  return h ? `${h}h ${m}m` : `${m}m ${s}s`;
+}
+
+function renderHeader() {
+  const gen = new Date(DATA.generated_at), next = new Date(DATA.next_refresh);
+  const fmt = (d) => d.toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
+  $("sub").textContent = `eBay auctions · PSA 10 · min ${money(DATA.min_price)} · ending within ${DATA.hours_ahead}h of the update. ` +
+    `Updated ${fmt(gen)} · next update about ${fmt(next)}.`;
+  const msgs = [];
+  if (DATA.demo) msgs.push("DEMO DATA — these are made-up sample listings so you can preview the page. Links go to eBay searches, not real auctions.");
+  if (!DATA.has_pricecharting) msgs.push("No PriceCharting API key is set, so market prices aren't filled in automatically. Click “PriceCharting” on a card, then type the PSA 10 price into the card; it's saved in this browser.");
+  if (msgs.length) { $("banner").hidden = false; $("banner").innerHTML = msgs.map(esc).join("<br>"); }
+  $("footer").innerHTML = `A deal = current bid at least ${Math.round(T * 100)}% under the PSA 10 market price. “Max bid” is the most you can bid and still be ${Math.round(T * 100)}% under.
+    Low-confidence PriceCharting matches are never counted as deals until you check them (type the price in to confirm).
+    Market prices: ${DATA.has_pricecharting ? "PriceCharting PSA 10 (manual-only-price)." : "entered by you."} Starred cards and typed prices are saved in this browser only.`;
+}
+
+function renderChips(listings) {
+  const counts = { all: listings.length };
+  listings.forEach((it) => (counts[it.game] = (counts[it.game] || 0) + 1));
+  const opts = [{ key: "all", label: "All" }, ...DATA.games];
+  $("chips").innerHTML = opts.map((g) =>
+    `<button class="chip" data-game="${g.key}" aria-pressed="${state.game === g.key}">${esc(g.label)}<span class="n">${counts[g.key] || 0}</span></button>`).join(" ");
+}
+
+function card(it, c) {
+  const starred = !!state.stars[it.id];
+  const pc = it.pc;
+  const pctHtml = c.pct == null ? `<span class="meta">enter price →</span>` :
+    `<span class="pct ${c.deal ? "good" : c.pct < 0 ? "over" : ""}">${c.pct >= 0 ? Math.round(c.pct * 100) + "% under" : Math.round(-c.pct * 100) + "% over"}</span>`;
+  const matchHtml = c.manual ? `Market price entered by you.` :
+    pc ? `Matched: <b>${esc(pc.name)}</b> · ${esc(pc.console)} · <span class="conf ${pc.confidence}">${pc.confidence} confidence</span>` +
+      (pc.psa9 ? ` · PSA 9 ${money(pc.psa9)}` : "") :
+    DATA.has_pricecharting ? `No PriceCharting match found — check manually.` : `Look up the PSA 10 price, then type it in above.`;
+  const soon = c.msLeft > 0 && c.msLeft < 3.6e6;
+  return `<article class="card ${c.deal ? "deal" : ""} ${c.msLeft <= 0 ? "ended" : ""}" data-id="${esc(it.id)}">
+    <div class="top">
+      ${it.image ? `<img class="thumb" loading="lazy" src="${esc(it.image)}" alt="">` : `<div class="thumb">${esc(gameLabel[it.game])}<br>no image</div>`}
+      <div style="min-width:0;flex:1">
+        <a class="title" href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.title)}</a>
+        <div class="meta"><span class="tag">${esc(gameLabel[it.game])}</span>${it.card_number ? `<span class="tag">#${esc(it.card_number)}</span>` : ""}</div>
+        <div class="meta" style="margin-top:6px">Ends in <span class="time ${soon ? "soon" : ""}" data-end="${esc(it.end_time)}">${timeLeft(c.msLeft)}</span></div>
+        <div class="meta">${it.bid_count} bid${it.bid_count === 1 ? "" : "s"} · ship ${it.shipping == null ? "?" : it.shipping ? money(it.shipping) : "free"}${it.seller ? ` · ${esc(it.seller)}${it.seller_feedback ? " (" + esc(it.seller_feedback) + "%)" : ""}` : ""}</div>
+      </div>
+      <button class="star ${starred ? "on" : ""}" data-star="${esc(it.id)}" aria-label="Star">${starred ? "★" : "☆"}</button>
+    </div>
+    <div class="nums">
+      <div><div class="k">Current bid</div><div class="v">${money(it.current_bid)}</div></div>
+      <div><div class="k">PSA 10 market</div>
+        <div class="manual"><input type="number" min="0" step="1" inputmode="decimal" data-manual="${esc(it.id)}"
+          placeholder="${pc && pc.psa10 ? pc.psa10 : "type $"}" value="${state.manual[it.id] || ""}" aria-label="PSA 10 market price"></div></div>
+      <div><div class="k">vs market</div><div class="v">${pctHtml}</div></div>
+      <div><div class="k">Max bid (${Math.round(T * 100)}% under)</div><div class="v">${money(c.maxBid)}</div></div>
+    </div>
+    <div class="match">${matchHtml}</div>
+    <div class="links">
+      <a href="${esc(it.pc_search_url)}" target="_blank" rel="noopener">PriceCharting</a>
+      <a href="${esc(it.google_url)}" target="_blank" rel="noopener">Google</a>
+      <a class="primary" href="${esc(it.url)}" target="_blank" rel="noopener">Open on eBay →</a>
+    </div>
+  </article>`;
+}
+
+function render() {
+  const q = $("q").value.trim().toLowerCase();
+  const all = DATA.listings.map((it) => ({ it, c: calc(it) }));
+  renderChips(all.map((x) => x.it));
+  let rows = all.filter(({ it, c }) =>
+    (state.game === "all" || it.game === state.game) &&
+    (!$("dealsOnly").checked || c.deal) &&
+    (!$("starOnly").checked || state.stars[it.id]) &&
+    (!$("hideEnded").checked || c.msLeft > 0) &&
+    (!q || it.title.toLowerCase().includes(q)));
+  const s = $("sort").value;
+  const key = {
+    end: (x) => new Date(x.it.end_time),
+    pct: (x) => -(x.c.pct ?? -9),
+    bid: (x) => x.it.current_bid,
+    market: (x) => -(x.c.market ?? 0),
+  }[s];
+  rows.sort((a, b) => key(a) - key(b));
+  const deals = all.filter((x) => x.c.deal && x.c.msLeft > 0).length;
+  $("stats").textContent = `Showing ${rows.length} of ${all.length} auctions · ${deals} deal${deals === 1 ? "" : "s"} right now`;
+  $("grid").innerHTML = rows.length ? rows.map((x) => card(x.it, x.c)).join("") :
+    `<div class="empty">Nothing matches these filters.</div>`;
+}
+
+function save() {
+  store.set("game", state.game); store.set("stars", state.stars); store.set("manual", state.manual);
+  ["dealsOnly", "starOnly", "withShip", "hideEnded"].forEach((id) => store.set(id, $(id).checked));
+  store.set("sort", $("sort").value);
+}
+
+["dealsOnly", "starOnly", "withShip", "hideEnded"].forEach((id) => { $(id).checked = store.get(id, $(id).checked); $(id).addEventListener("change", () => { save(); render(); }); });
+$("sort").value = store.get("sort", "end");
+$("sort").addEventListener("change", () => { save(); render(); });
+$("q").addEventListener("input", render);
+$("chips").addEventListener("click", (e) => { const b = e.target.closest("[data-game]"); if (!b) return; state.game = b.dataset.game; save(); render(); });
+$("grid").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-star]"); if (!b) return;
+  const id = b.dataset.star; state.stars[id] ? delete state.stars[id] : (state.stars[id] = 1); save(); render();
+});
+$("grid").addEventListener("change", (e) => {
+  const inp = e.target.closest("[data-manual]"); if (!inp) return;
+  const v = parseFloat(inp.value); v > 0 ? (state.manual[inp.dataset.manual] = v) : delete state.manual[inp.dataset.manual];
+  save(); render();
+});
+setInterval(() => {
+  document.querySelectorAll("[data-end]").forEach((el) => {
+    const ms = new Date(el.dataset.end) - Date.now();
+    el.textContent = timeLeft(ms); el.classList.toggle("soon", ms > 0 && ms < 3.6e6);
+  });
+}, 1000);
+renderHeader();
+render();
+</script>
+</body>
+</html>

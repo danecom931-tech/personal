@@ -1,0 +1,59 @@
+name: Build card deals page
+
+on:
+  schedule:
+    # Every 12 hours (01:17 and 13:17 UTC). Scheduled runs only happen on the default branch.
+    - cron: "17 1,13 * * *"
+  workflow_dispatch: {}   # lets you click "Run workflow" for an on-demand refresh
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: card-deals
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Restore PriceCharting cache
+        uses: actions/cache@v4
+        with:
+          path: data/pc_cache.json
+          key: pc-cache-${{ github.run_id }}
+          restore-keys: pc-cache-
+      - name: Tests
+        run: python -m unittest discover -s tests -v
+      - name: Build page
+        run: python -m card_deals.build --out site/index.html
+        env:
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+          PRICECHARTING_TOKEN: ${{ secrets.PRICECHARTING_TOKEN }}
+          SHIP_TO_ZIP: ${{ vars.SHIP_TO_ZIP }}
+      - name: Save page as a download
+        uses: actions/upload-artifact@v4
+        with:
+          name: deals-page
+          path: site/index.html
+          retention-days: 3
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
