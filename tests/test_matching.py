@@ -1,7 +1,7 @@
 import unittest
 
 from card_deals.config import GAMES
-from card_deals.ebay import is_single_psa10, parse_item
+from card_deals.ebay import is_single_psa10, parse_item, resize_image
 from card_deals.matching import best_match, build_query, extract_number
 
 G = {g["key"]: g for g in GAMES}
@@ -54,6 +54,12 @@ class MatchTests(unittest.TestCase):
 
 
 class ParseTests(unittest.TestCase):
+    def test_resize_image(self):
+        url = "https://i.ebayimg.com/images/g/abcDEF/s-l225.jpg"
+        self.assertEqual(resize_image(url, 1600), "https://i.ebayimg.com/images/g/abcDEF/s-l1600.jpg")
+        self.assertEqual(resize_image("https://example.com/x.jpg", 500), "https://example.com/x.jpg")
+        self.assertIsNone(resize_image(None, 500))
+
     def test_parse_auction(self):
         raw = {
             "itemId": "v1|123|0", "title": "X PSA 10", "itemWebUrl": "https://ebay.com/itm/123",

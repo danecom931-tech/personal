@@ -86,7 +86,7 @@ input[type=search]:focus, select:focus { outline: none; border-color: var(--blue
 
 /* grid + cards */
 main { max-width: 1300px; margin: 0 auto; padding: 14px 16px 40px;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
 .card { position: relative; background: var(--panel); border: 2px solid var(--line); border-bottom-width: 5px;
   border-radius: 22px; display: flex; flex-direction: column; transition: transform .15s; }
 .card:hover { transform: translateY(-3px); }
@@ -96,9 +96,25 @@ main { max-width: 1300px; margin: 0 auto; padding: 14px 16px 40px;
   font-size: 13px; padding: 3px 12px; border-radius: 999px; border-bottom: 3px solid var(--green-d); letter-spacing: .04em;
   animation: wiggle 3s ease-in-out infinite; }
 @keyframes wiggle { 0%, 90%, 100% { transform: rotate(0); } 93% { transform: rotate(-6deg); } 96% { transform: rotate(6deg); } }
-.top { display: flex; gap: 12px; padding: 16px 14px 10px; }
-.thumb { width: 84px; height: 116px; flex: none; border-radius: 12px; background: var(--bg); object-fit: contain;
-  display: flex; align-items: center; justify-content: center; font-size: 34px; border: 2px solid var(--line); }
+.photo { position: relative; height: 340px; margin: 8px 8px 0; border-radius: 16px; background: var(--bg);
+  display: flex; align-items: center; justify-content: center; cursor: zoom-in; overflow: hidden; }
+.photo img { width: 100%; height: 100%; object-fit: contain; padding: 10px; transition: transform .25s; }
+.photo:hover img { transform: scale(1.04); }
+.photo .noimg { font-size: 64px; }
+.photo .zoom { position: absolute; right: 10px; bottom: 10px; background: rgba(0,0,0,.55); color: #fff; font-size: 12px;
+  font-weight: 800; padding: 3px 9px; border-radius: 999px; }
+.photo .star { position: absolute; top: 8px; right: 10px; text-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.photo .pill.time { position: absolute; left: 10px; bottom: 10px; font-size: 13px; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.ribbon { z-index: 2; }
+.top { padding: 12px 14px 8px; }
+/* full-screen zoom */
+.lightbox { position: fixed; inset: 0; z-index: 50; background: rgba(10,14,20,.88); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px; padding: 16px; cursor: zoom-out; }
+.lightbox[hidden] { display: none; }
+.lightbox img { max-width: 100%; max-height: calc(100vh - 140px); object-fit: contain; border-radius: 12px; background: #fff; }
+.lightbox .cap { color: #fff; font-weight: 800; text-align: center; max-width: 700px; }
+.lightbox .row { display: flex; gap: 10px; }
+.lightbox .btn:not(.green) { background: #fff; color: #2b3440; }
 .title { font-weight: 900; font-size: 15px; line-height: 1.3; margin: 0 0 6px; display: -webkit-box; -webkit-line-clamp: 3;
   -webkit-box-orient: vertical; overflow: hidden; }
 .title:hover { color: var(--blue); }
@@ -109,7 +125,7 @@ main { max-width: 1300px; margin: 0 auto; padding: 14px 16px 40px;
 @keyframes pulse { 50% { transform: scale(1.06); } }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill.time { color: var(--blue); } :root:not([data-theme="light"]) .pill.time.soon { color: var(--red); } }
 .meta { color: var(--muted); font-size: 12px; font-weight: 700; }
-.star { background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--line-d);
+.star { background: none; border: none; font-size: 30px; line-height: 1; cursor: pointer; color: var(--line-d);
   padding: 0; align-self: flex-start; transition: transform .15s; }
 .star.on { color: var(--yellow); animation: pop .35s ease-out; }
 @keyframes pop { 40% { transform: scale(1.5) rotate(15deg); } }
@@ -181,6 +197,11 @@ footer { max-width: 1300px; margin: 0 auto; padding: 0 16px 30px; color: var(--m
 </div></div>
 <main id="grid"></main>
 <footer id="footer"></footer>
+<div class="lightbox" id="lightbox" hidden>
+  <img id="lb-img" alt="">
+  <div class="cap" id="lb-cap"></div>
+  <div class="row"><a class="btn green" id="lb-ebay" target="_blank" rel="noopener">Bid on eBay</a><button class="btn" id="lb-close">Close</button></div>
+</div>
 
 <script>
 const DATA = /*__DATA__*/null;
@@ -287,18 +308,20 @@ function card(it, c) {
   const soon = c.msLeft > 0 && c.msLeft < 3.6e6;
   return `<article class="card ${c.deal ? "deal" : ""} ${c.msLeft <= 0 ? "ended" : ""}">
     ${c.deal && c.msLeft > 0 ? `<div class="ribbon">DEAL!</div>` : ""}
+    <div class="photo" ${it.image ? `data-zoom="${esc(it.id)}"` : ""}>
+      ${it.image ? `<img loading="lazy" src="${esc(it.image)}" alt="${esc(it.title)}"><span class="zoom">🔍 Tap to zoom</span>` : `<span class="noimg">${ICON[it.game] || "🃏"}</span>`}
+      <span class="pill time ${soon ? "soon" : ""}">⏰ <span data-end="${esc(it.end_time)}">${timeLeft(c.msLeft)}</span></span>
+      <button class="star ${starred ? "on" : ""}" data-star="${esc(it.id)}" aria-label="Star">${starred ? "★" : "☆"}</button>
+    </div>
     <div class="top">
-      ${it.image ? `<img class="thumb" loading="lazy" src="${esc(it.image)}" alt="">` : `<div class="thumb">${ICON[it.game] || "🃏"}</div>`}
-      <div style="min-width:0;flex:1">
+      <div style="min-width:0">
         <a class="title" href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.title)}</a>
         <div class="pills">
-          <span class="pill time ${soon ? "soon" : ""}">⏰ <span data-end="${esc(it.end_time)}">${timeLeft(c.msLeft)}</span></span>
           <span class="pill">${ICON[it.game] || ""} ${esc(gameLabel[it.game])}</span>
           ${it.card_number ? `<span class="pill">#${esc(it.card_number)}</span>` : ""}
         </div>
         <div class="meta">${it.bid_count} bid${it.bid_count === 1 ? "" : "s"} · ${it.shipping == null ? "ship ?" : it.shipping ? "ship " + money(it.shipping) : "free ship"}${it.seller_feedback ? ` · ${esc(it.seller_feedback)}% seller` : ""}</div>
       </div>
-      <button class="star ${starred ? "on" : ""}" data-star="${esc(it.id)}" aria-label="Star">${starred ? "★" : "☆"}</button>
     </div>
     <div class="prices">
       <div class="tile"><div class="k">Current bid</div><div class="v">${money(it.current_bid)}</div></div>
@@ -347,7 +370,17 @@ $("sort").value = store.get("sort", "end");
 $("sort").addEventListener("change", () => { save(); render(); });
 $("q").addEventListener("input", render);
 $("chips").addEventListener("click", (e) => { const b = e.target.closest("[data-game]"); if (!b) return; state.game = b.dataset.game; save(); render(); });
+const byId = Object.fromEntries(DATA.listings.map((it) => [it.id, it]));
+function openZoom(it) {
+  $("lb-img").src = it.image_large || it.image; $("lb-cap").textContent = it.title; $("lb-ebay").href = it.url;
+  $("lightbox").hidden = false; document.body.style.overflow = "hidden";
+}
+function closeZoom() { $("lightbox").hidden = true; $("lb-img").src = ""; document.body.style.overflow = ""; }
+$("lightbox").addEventListener("click", (e) => { if (!e.target.closest("#lb-ebay")) closeZoom(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeZoom(); });
 $("grid").addEventListener("click", (e) => {
+  const z = e.target.closest("[data-zoom]");
+  if (z && !e.target.closest("[data-star]")) { openZoom(byId[z.dataset.zoom]); return; }
   const b = e.target.closest("[data-star]"); if (!b) return;
   const id = b.dataset.star; state.stars[id] ? delete state.stars[id] : (state.stars[id] = 1); save(); render();
 });

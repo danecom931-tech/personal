@@ -32,6 +32,14 @@ def get_token(client_id, client_secret):
     return resp["access_token"]
 
 
+EBAY_SIZE_RE = re.compile(r"/s-l\d+(\.\w+)")
+
+
+def resize_image(url, size):
+    """eBay image URLs end in /s-l225.jpg etc.; ask for a bigger version."""
+    return EBAY_SIZE_RE.sub(rf"/s-l{size}\1", url) if url else url
+
+
 def is_single_psa10(title):
     """True if the title says PSA 10 and doesn't look like a multi-card lot."""
     return bool(PSA10_RE.search(title)) and not LOT_RE.search(title)
@@ -57,7 +65,8 @@ def parse_item(raw, game_key):
         "game": game_key,
         "title": raw.get("title", ""),
         "url": raw.get("itemWebUrl"),
-        "image": (raw.get("image") or {}).get("imageUrl"),
+        "image": resize_image((raw.get("image") or {}).get("imageUrl"), 500),
+        "image_large": resize_image((raw.get("image") or {}).get("imageUrl"), 1600),
         "current_bid": bid,
         "currency": (raw.get("currentBidPrice") or raw.get("price") or {}).get("currency", "USD"),
         "bid_count": raw.get("bidCount", 0),

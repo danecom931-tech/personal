@@ -55,6 +55,29 @@ def fetch_live():
     return listings, bool(pc), pc_status
 
 
+DEMO_COLORS = {"pokemon": ("#ffcb3d", "#ff7a3d"), "onepiece": ("#ff5a5f", "#8a2be2"),
+               "dragonball": ("#ff9a2e", "#2fa8f5"), "weiss": ("#a66cff", "#2fc4b2")}
+
+
+def demo_image(title, game):
+    """Simple made-up slab artwork (SVG) so the demo shows what images look like."""
+    import html
+    a, b = DEMO_COLORS[game]
+    name = html.escape(" ".join(title.split()[:3]))
+    svg = f"""<svg xmlns='http://www.w3.org/2000/svg' width='300' height='500' viewBox='0 0 300 500'>
+<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='{a}'/><stop offset='1' stop-color='{b}'/></linearGradient></defs>
+<rect x='4' y='4' width='292' height='492' rx='18' fill='#eef3f8' stroke='#b9c6d3' stroke-width='4'/>
+<rect x='18' y='18' width='264' height='70' rx='8' fill='#fff' stroke='#d33' stroke-width='3'/>
+<text x='30' y='48' font-family='Arial' font-weight='700' font-size='16' fill='#222'>{name}</text>
+<text x='30' y='74' font-family='Arial' font-size='13' fill='#555'>DEMO CARD</text>
+<text x='268' y='70' text-anchor='end' font-family='Arial' font-weight='900' font-size='30' fill='#d33'>10</text>
+<rect x='38' y='108' width='224' height='370' rx='12' fill='url(#g)'/>
+<circle cx='150' cy='250' r='70' fill='rgba(255,255,255,.35)'/>
+<text x='150' y='440' text-anchor='middle' font-family='Arial' font-weight='700' font-size='18' fill='#fff'>{name}</text>
+</svg>"""
+    return "data:image/svg+xml;charset=utf-8," + urllib.parse.quote(svg)
+
+
 def demo_listings():
     """Made-up sample data so the page can be previewed without API keys."""
     now = datetime.now(timezone.utc)
@@ -87,7 +110,7 @@ def demo_listings():
             "game": gkey,
             "title": title,
             "url": "https://www.ebay.com/sch/i.html?" + urllib.parse.urlencode({"_nkw": title}),
-            "image": None,
+            "image": demo_image(title, gkey) if i != 9 else None,
             "current_bid": float(bid),
             "currency": "USD",
             "bid_count": bids,
