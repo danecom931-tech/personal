@@ -45,10 +45,14 @@ def fetch_live():
                 continue
             seen.add(item["id"])
             listings.append(enrich(item, game, pc))
+    pc_status = None
     if pc:
         pc.save()
-        print(f"PriceCharting API calls this run: {pc.calls}")
-    return listings, bool(pc)
+        pc_status = pc.status()
+        print(f"PriceCharting API calls this run: {pc.calls}; matched {pc_status['matched']}, failed {pc_status['failed']}")
+        if pc_status["error"]:
+            print(f"::warning::PriceCharting lookups stopped: {pc_status['error']}")
+    return listings, bool(pc), pc_status
 
 
 def demo_listings():
@@ -99,7 +103,7 @@ def demo_listings():
     return listings
 
 
-def render(listings, has_pricecharting, demo, out_path):
+def render(listings, has_pricecharting, demo, out_path, pc_status=None):
     now = datetime.now(timezone.utc)
     payload = {
         "generated_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -108,6 +112,7 @@ def render(listings, has_pricecharting, demo, out_path):
         "min_price": config.MIN_PRICE,
         "deal_threshold": config.DEAL_THRESHOLD,
         "has_pricecharting": has_pricecharting,
+        "pc_status": pc_status,
         "demo": demo,
         "games": [{"key": g["key"], "label": g["label"]} for g in config.GAMES],
         "listings": sorted(listings, key=lambda x: x["end_time"] or ""),
@@ -127,8 +132,8 @@ def main():
     if args.demo:
         render(demo_listings(), True, True, args.out)
     else:
-        listings, has_pc = fetch_live()
-        render(listings, has_pc, False, args.out)
+        listings, has_pc, pc_status = fetch_live()
+        render(listings, has_pc, False, args.out, pc_status)
 
 
 if __name__ == "__main__":

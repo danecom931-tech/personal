@@ -31,6 +31,10 @@ class PriceCharting:
         self.cache_path = cache_path
         self.cache = {}
         self.calls = 0
+        self.ok = 0
+        self.failed = 0
+        self.consecutive_failures = 0
+        self.disabled_reason = None
         if os.path.exists(cache_path):
             try:
                 with open(cache_path) as f:
@@ -49,7 +53,10 @@ class PriceCharting:
         time.sleep(1)  # be polite: about one call per second
         self.calls += 1
         params["t"] = self.token
-        return request_json(f"{API}/{path}?{urllib.parse.urlencode(params)}")
+        resp = request_json(f"{API}/{path}?{urllib.parse.urlencode(params)}")
+        if resp.get("status") == "error":
+            raise RuntimeError(f"PriceCharting error: {resp.get('error-message', resp)}")
+        return resp
 
     def _search(self, query):
         hit = self.cache.get(query)
@@ -75,7 +82,11 @@ class PriceCharting:
             "ungraded": _cents(product.get("loose-price")),
         }
 
+    MAX_CONSECUTIVE_FAILURES = 5
+
     def lookup(self, title, game):
+        if self.disabled_reason:
+            return None
         query, number = build_query(title, game)
         try:
             products = self._search(query)
@@ -83,16 +94,27 @@ class PriceCharting:
                 # Retry with just the game and card number.
                 products = self._search(f"{game['pc_hint']} {number}")
             match = best_match(title, number, game, products)
+            self.consecutive_failures = 0
             if not match:
                 return None
             _, conf, product = match
-            return {
+            info = {
                 "name": product.get("product-name"),
                 "console": product.get("console-name"),
                 "id": product.get("id"),
                 "confidence": conf,
                 **self._prices(product),
             }
+            self.ok += 1
+            return info
         except RuntimeError as e:
+            self.failed += 1
+            self.consecutive_failures += 1
             print(f"  PriceCharting lookup failed for {title!r}: {e}")
+            if self.consecutive_failures >= self.MAX_CONSECUTIVE_FAILURES:
+                self.disabled_reason = str(e)
+                print(f"  Stopping PriceCharting lookups after {self.consecutive_failures} failures in a row.")
             return None
+
+    def status(self):
+        return {"matched": self.ok, "failed": self.failed, "error": self.disabled_reason}

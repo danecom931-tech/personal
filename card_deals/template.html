@@ -224,6 +224,9 @@ function renderStatic() {
     Low-confidence PriceCharting matches never count as deals until you type the price in. Stars and typed prices are saved in this browser only.`;
   const msgs = [];
   if (DATA.demo) msgs.push("🧪 DEMO DATA: made-up sample listings so you can preview the page. Links go to eBay searches, not real auctions.");
+  const ps = DATA.pc_status;
+  if (ps && ps.error) msgs.push("⚠️ PriceCharting lookups failed this run, so prices aren't filled in. You can still type them in. Error: " + ps.error.slice(0, 160));
+  else if (ps && ps.failed > 0) msgs.push(`⚠️ ${ps.failed} PriceCharting lookup${ps.failed === 1 ? "" : "s"} failed this run; those cards need a price typed in.`);
   if (!DATA.has_pricecharting) msgs.push("💡 No PriceCharting key yet: tap “Prices” on a card, then type the PSA 10 price into the card. I'll do the math!");
   if (msgs.length) { $("banner").hidden = false; $("banner").innerHTML = `<div>${msgs.map(esc).join("<br>")}</div>`; }
 }

@@ -16,7 +16,7 @@ TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token"
 SEARCH_URL = "https://api.ebay.com/buy/browse/v1/item_summary/search"
 
 PSA10_RE = re.compile(r"\bPSA\s*[-:]?\s*(?:GEM\s*(?:MT|MINT)\s*)?10\b", re.I)
-LOT_RE = re.compile(r"\b(lot|bundle|set of|x\d+|\d+\s*cards)\b", re.I)
+LOT_RE = re.compile(r"\b(lot|bundle|set of|x\d+|\d+\s*(?:cards|slabs))\b", re.I)
 
 
 def get_token(client_id, client_secret):
