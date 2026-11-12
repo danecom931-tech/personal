@@ -161,6 +161,28 @@ main { max-width: 1300px; margin: 0 auto; padding: 14px 16px 40px;
 
 .empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 50px 0; font-size: 17px; }
 .empty .big { font-size: 54px; }
+/* refresh bar + setup dialog */
+.refresh { max-width: 1300px; margin: 0 auto; padding: 0 16px 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.refresh .age { color: var(--muted); font-weight: 800; }
+#refreshMsg { font-weight: 800; color: var(--blue-d); }
+#refreshMsg.err { color: var(--red-d); }
+#refreshMsg a { text-decoration: underline; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #refreshMsg { color: var(--blue); } :root:not([data-theme="light"]) #refreshMsg.err { color: var(--red); } }
+.spin { display: inline-block; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn[disabled] { opacity: .6; cursor: default; }
+.btn[hidden] { display: none; }
+.modal { position: fixed; inset: 0; z-index: 60; background: rgba(10,14,20,.6); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal[hidden] { display: none; }
+.sheet { background: var(--panel); border: 2px solid var(--line-d); border-bottom-width: 5px; border-radius: 22px; padding: 20px; max-width: 520px; width: 100%; max-height: calc(100vh - 32px); overflow: auto; }
+.sheet h2 { margin: 0 0 6px; font-weight: 900; font-size: 20px; }
+.sheet p, .sheet li { color: var(--muted); font-weight: 700; }
+.sheet ol { padding-left: 20px; margin: 8px 0 12px; }
+.sheet li { margin-bottom: 6px; }
+.sheet li b, .sheet p b { color: var(--text); }
+.sheet a.u { color: var(--blue-d); text-decoration: underline; }
+.sheet input { width: 100%; padding: 10px 12px; border-radius: 14px; border: 2px solid var(--line-d); background: var(--bg); font-weight: 800; }
+.sheet .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 footer { max-width: 1300px; margin: 0 auto; padding: 0 16px 30px; color: var(--muted); font-size: 12px; font-weight: 700; }
 </style>
 </head>
@@ -179,6 +201,11 @@ footer { max-width: 1300px; margin: 0 auto; padding: 0 16px 30px; color: var(--m
   </svg>
   <div class="bubble"><h1 id="hello">Hey, card hunter!</h1><p id="sub"></p></div>
 </header>
+<div class="refresh">
+  <span class="age" id="age"></span>
+  <button class="btn blue" id="refreshBtn">🔄 Refresh now</button>
+  <span id="refreshMsg"></span>
+</div>
 <div class="badges" id="badges"></div>
 <div class="banner" id="banner" hidden></div>
 <div class="controls"><div class="controls-inner" id="controls">
@@ -197,6 +224,25 @@ footer { max-width: 1300px; margin: 0 auto; padding: 0 16px 30px; color: var(--m
 </div></div>
 <main id="grid"></main>
 <footer id="footer"></footer>
+<div class="modal" id="setup" hidden><div class="sheet" role="dialog" aria-labelledby="setupTitle">
+  <h2 id="setupTitle">Set up one-tap refresh</h2>
+  <p>The refresh button asks GitHub to run the search right away. It needs a GitHub key that can <b>only</b> start this workflow. You do this once per browser or phone.</p>
+  <ol>
+    <li>Open <a class="u" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → New fine-grained token</a>.</li>
+    <li>Name it <b>card deals refresh</b>. Set an expiration (for example, 1 year).</li>
+    <li>Under <b>Repository access</b>, choose <b>Only select repositories</b> and pick <b id="setupRepo">your repo</b>.</li>
+    <li>Under <b>Permissions → Repository permissions</b>, set <b>Actions</b> to <b>Read and write</b>. Leave everything else as is.</li>
+    <li>Click <b>Generate token</b>, copy it, and paste it below.</li>
+  </ol>
+  <input id="tokenInput" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+  <p style="font-size:12px;margin-top:8px">Saved only in this browser. It can't read your code or change anything except start this workflow.</p>
+  <div class="row">
+    <button class="btn green" id="tokenSave">Save &amp; refresh</button>
+    <button class="btn" id="setupClose">Cancel</button>
+    <a class="btn" id="manualRun" target="_blank" rel="noopener">Run it on GitHub instead</a>
+    <button class="btn" id="tokenForget" hidden>Remove saved key</button>
+  </div>
+</div></div>
 <div class="lightbox" id="lightbox" hidden>
   <img id="lb-img" alt="">
   <div class="cap" id="lb-cap"></div>
@@ -395,6 +441,78 @@ setInterval(() => {
     el.textContent = timeLeft(ms); el.parentElement.classList.toggle("soon", ms > 0 && ms < 3.6e6);
   });
 }, 1000);
+// ---------- Refresh now ----------
+const GH = DATA.github;
+const TOKEN_KEY = "gh_refresh_token", STARTED_KEY = "refresh_started";
+function setMsg(html, err) { const el = $("refreshMsg"); el.innerHTML = html; el.classList.toggle("err", !!err); }
+function ageText() {
+  const mins = Math.round((Date.now() - new Date(DATA.generated_at)) / 6e4);
+  $("age").textContent = "Updated " + (mins < 1 ? "just now" : mins < 60 ? `${mins} min ago` : `${Math.floor(mins / 60)}h ${mins % 60}m ago`);
+}
+function actionsUrl() { return GH ? `https://github.com/${GH.repo}/actions/workflows/${GH.workflow}` : "#"; }
+function ghFetch(path, opts = {}) {
+  return fetch(`https://api.github.com/repos/${GH.repo}${path}`, { ...opts, headers: {
+    Authorization: `Bearer ${store.get(TOKEN_KEY, "")}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", ...(opts.headers || {}) } });
+}
+function openSetup() {
+  $("setupRepo").textContent = GH ? GH.repo : "your repo";
+  $("manualRun").href = actionsUrl();
+  $("tokenForget").hidden = !store.get(TOKEN_KEY, "");
+  $("tokenInput").value = "";
+  $("setup").hidden = false;
+}
+async function startRefresh() {
+  if (!GH) { setMsg("Refresh works on your live page (it isn't available in previews).", true); return; }
+  if (!store.get(TOKEN_KEY, "")) { openSetup(); return; }
+  $("refreshBtn").disabled = true;
+  setMsg('<span class="spin">🔄</span> Starting…');
+  try {
+    const r = await ghFetch(`/actions/workflows/${GH.workflow}/dispatches`, { method: "POST", body: JSON.stringify({ ref: GH.ref }) });
+    if (r.status === 204) { store.set(STARTED_KEY, Date.now()); watchRefresh(); return; }
+    if (r.status === 401) store.set(TOKEN_KEY, "");
+    setMsg(`GitHub said no (error ${r.status}). <a href="#" id="fixKey">Check your key</a> or <a href="${actionsUrl()}" target="_blank" rel="noopener">run it on GitHub</a>.`, true);
+    const f = $("fixKey"); if (f) f.onclick = (e) => { e.preventDefault(); openSetup(); };
+  } catch (e) {
+    setMsg(`Couldn't reach GitHub. <a href="${actionsUrl()}" target="_blank" rel="noopener">Run it on GitHub</a> instead.`, true);
+  }
+  $("refreshBtn").disabled = false;
+}
+let watchTimer = null;
+async function checkRefresh() {
+  const started = store.get(STARTED_KEY, 0);
+  if (!started) return;
+  const mins = Math.floor((Date.now() - started) / 6e4);
+  if (Date.now() - started > 40 * 6e4) { store.set(STARTED_KEY, 0); setMsg(`Refresh is taking too long. <a href="${actionsUrl()}" target="_blank" rel="noopener">Check it on GitHub</a>.`, true); $("refreshBtn").disabled = false; clearInterval(watchTimer); return; }
+  // New data published? Reload (the query string skips any cached copy).
+  try {
+    const v = await (await fetch(`version.json?t=${Date.now()}`, { cache: "no-store" })).json();
+    if (v.generated_at > DATA.generated_at) { store.set(STARTED_KEY, 0); setMsg("✅ New results! Loading…"); location.replace(location.pathname + "?v=" + Date.now()); return; }
+  } catch {}
+  // Did the run fail?
+  try {
+    const runs = (await (await ghFetch(`/actions/workflows/${GH.workflow}/runs?per_page=1&event=workflow_dispatch`)).json()).workflow_runs || [];
+    const run = runs[0];
+    if (run && new Date(run.created_at) >= started - 60e3 && run.status === "completed" && run.conclusion !== "success") {
+      store.set(STARTED_KEY, 0); clearInterval(watchTimer); $("refreshBtn").disabled = false;
+      setMsg(`Refresh failed. <a href="${run.html_url}" target="_blank" rel="noopener">See what went wrong</a>.`, true); return;
+    }
+  } catch {}
+  setMsg(`<span class="spin">🔄</span> Refreshing… ${mins ? mins + " min so far, " : ""}usually 5–10 min. This page updates by itself.`);
+}
+function watchRefresh() {
+  $("refreshBtn").disabled = true;
+  checkRefresh(); clearInterval(watchTimer); watchTimer = setInterval(checkRefresh, 20000);
+}
+$("refreshBtn").addEventListener("click", startRefresh);
+$("setupClose").addEventListener("click", () => ($("setup").hidden = true));
+$("setup").addEventListener("click", (e) => { if (e.target.id === "setup") $("setup").hidden = true; });
+$("tokenSave").addEventListener("click", () => {
+  const t = $("tokenInput").value.trim(); if (!t) return;
+  store.set(TOKEN_KEY, t); $("setup").hidden = true; startRefresh();
+});
+$("tokenForget").addEventListener("click", () => { store.set(TOKEN_KEY, ""); $("setup").hidden = true; setMsg("Saved key removed."); });
+ageText(); setInterval(ageText, 60000);
+if (GH && store.get(STARTED_KEY, 0)) watchRefresh();
 renderStatic();
 render();
 </script>

@@ -126,6 +126,15 @@ def demo_listings():
     return listings
 
 
+def github_info():
+    """Where the page's Refresh button should start the workflow (set inside GitHub Actions)."""
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    ref = os.environ.get("GITHUB_REF_NAME")
+    if not (repo and ref):
+        return None
+    return {"repo": repo, "ref": ref, "workflow": "deals.yml"}
+
+
 def render(listings, has_pricecharting, demo, out_path, pc_status=None):
     now = datetime.now(timezone.utc)
     payload = {
@@ -137,6 +146,7 @@ def render(listings, has_pricecharting, demo, out_path, pc_status=None):
         "has_pricecharting": has_pricecharting,
         "pc_status": pc_status,
         "demo": demo,
+        "github": github_info(),
         "games": [{"key": g["key"], "label": g["label"]} for g in config.GAMES],
         "listings": sorted(listings, key=lambda x: x["end_time"] or ""),
     }
@@ -144,6 +154,9 @@ def render(listings, has_pricecharting, demo, out_path, pc_status=None):
     html = TEMPLATE.read_text(encoding="utf-8").replace("/*__DATA__*/null", data)
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     Path(out_path).write_text(html, encoding="utf-8")
+    # Tiny file the page polls to notice when a newer build has been published.
+    version = Path(out_path).with_name("version.json")
+    version.write_text(json.dumps({"generated_at": payload["generated_at"]}), encoding="utf-8")
     print(f"Wrote {out_path} with {len(listings)} listings")
 
 
